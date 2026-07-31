@@ -25,7 +25,7 @@ jobs:
 
       - name: Prepare Site Structure
         run: |
-          mkdir public
+          mkdir -p public
           if [ "${{ github.ref_name }}" == "main" ]; then
             cp index.html public/
           elif [ "${{ github.ref_name }}" == "pre-prod" ]; then
@@ -39,7 +39,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'public'
+          path: 'public/.'
 
       # 2. ADD THIS: This actually pushes the artifact to the live site
       - name: Deploy to GitHub Pages
