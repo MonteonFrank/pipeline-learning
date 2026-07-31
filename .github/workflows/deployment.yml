@@ -7,7 +7,6 @@ on:
       - pre-prod
       - main
 
-# 1. ADD THIS: Permissions required for GitHub Pages deployment
 permissions:
   contents: read
   pages: write
@@ -16,8 +15,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # This points the workflow to the environment GitHub uses for Pages hosting
     environment:
-      name: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'pre-prod' && 'staging' || 'dev' }}
+      name: github-pages
     
     steps:
       - name: Checkout Code
@@ -29,18 +29,19 @@ jobs:
           if [ "${{ github.ref_name }}" == "main" ]; then
             cp index.html public/
           elif [ "${{ github.ref_name }}" == "pre-prod" ]; then
-            mkdir public/staging
+            mkdir -p public/staging
             cp index.html public/staging/
           else
-            mkdir public/dev
+            mkdir -p public/dev
             cp index.html public/dev/
           fi
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          # This uploads the CONTENTS of public/, preventing 
+          # an extra 'public' folder in your URL path
           path: 'public/.'
 
-      # 2. ADD THIS: This actually pushes the artifact to the live site
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
