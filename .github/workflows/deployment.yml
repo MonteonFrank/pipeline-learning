@@ -1,0 +1,26 @@
+name: Multi-Environment Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - pre-prod
+      - main
+
+jobs:
+  # Logic to determine the environment based on the branch
+  deploy:
+    runs-on: ubuntu-latest
+    # This logic maps the branch to the environment name
+    environment:
+      name: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'pre-prod' && 'staging' || 'dev' }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to ${{ github.ref_name }}
+        run: |
+          echo "Deploying to environment: ${{ github.ref_name }}"
+          # Add your actual deployment scripts here (e.g., s3 sync, ftp, etc.)
+          # Example: npm run build && npm run deploy
