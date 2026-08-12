@@ -7,20 +7,41 @@ on:
       - pre-prod
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  # Logic to determine the environment based on the branch
   deploy:
     runs-on: ubuntu-latest
-    # This logic maps the branch to the environment name
+    # This points the workflow to the environment GitHub uses for Pages hosting
     environment:
-      name: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'pre-prod' && 'staging' || 'dev' }}
+      name: github-pages
     
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to ${{ github.ref_name }}
+      - name: Prepare Site Structure
         run: |
-          echo "Deploying to environment: ${{ github.ref_name }}"
-          # Add your actual deployment scripts here (e.g., s3 sync, ftp, etc.)
-          # Example: npm run build && npm run deploy
+          mkdir -p public
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            cp index.html public/
+          elif [ "${{ github.ref_name }}" == "pre-prod" ]; then
+            mkdir -p public/staging
+            cp index.html public/staging/
+          else
+            mkdir -p public/dev
+            cp index.html public/dev/
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # This uploads the CONTENTS of public/, preventing 
+          # an extra 'public' folder in your URL path
+          path: 'public/.'
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
